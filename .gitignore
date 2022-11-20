@@ -61,4 +61,6 @@ src/.DS_Store
 .DS_Store
 
 venv/
-pybind11/
+build/
+.github/
+.vscode/
