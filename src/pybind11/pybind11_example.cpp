@@ -11,8 +11,7 @@ std::string decode_error(int error_code)
 };
 
 void set_debug_level(int debug_level)
-{
-  plc_tag_set_debug_level(debug_level);
+{plc_tag_set_debug_level(debug_level);
 };
 
 std::string check_lib_version(int major, int minor, int patch)
@@ -29,7 +28,7 @@ int32_t create_tag(const char *tag_string, int timeout)
 void shutdown(void)
 {
   plc_tag_shutdown();
-}
+};
 
 std::string destroy_tag(int32_t tag_id) {
   int response_code = plc_tag_destroy(tag_id);

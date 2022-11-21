@@ -64,3 +64,6 @@ venv/
 build/
 .github/
 .vscode/
+
+*.egg-info/
+*.so
