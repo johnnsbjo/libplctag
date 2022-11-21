@@ -51,7 +51,6 @@
 #include <util/vector.h>
 #include <ab/ab.h>
 #include <mb/modbus.h>
-#include <pybind11.h>
 
 #define INITIAL_TAG_TABLE_SIZE (201)
 
@@ -659,7 +658,7 @@ THREAD_FUNC(tag_tickler_func)
 
 
 
-PYBIND11_EXPORT const char *plc_tag_decode_error(int rc)
+LIB_EXPORT const char *plc_tag_decode_error(int rc)
 {
     switch(rc) {
     case PLCTAG_STATUS_PENDING:
@@ -765,7 +764,7 @@ PYBIND11_EXPORT const char *plc_tag_decode_error(int rc)
  * of information.   Input values not defined will be ignored.
  */
 
-PYBIND11_EXPORT void plc_tag_set_debug_level(int debug_level)
+LIB_EXPORT void plc_tag_set_debug_level(int debug_level)
 {
 	if (debug_level >= PLCTAG_DEBUG_NONE && debug_level <= PLCTAG_DEBUG_SPEW) {
 		set_debug_level(debug_level);
@@ -782,18 +781,18 @@ PYBIND11_EXPORT void plc_tag_set_debug_level(int debug_level)
  * PLCTAG_ERR_UNSUPPORTED is returned.
  */
 
-PYBIND11_EXPORT int plc_tag_check_lib_version(int req_major, int req_minor, int req_patch)
+LIB_EXPORT int plc_tag_check_lib_version(int req_major, int req_minor, int req_patch)
 {
     /* encode these with 16-bits per version part. */
-    uint64_t lib_encoded_version = (((uint64_t)version_major) << 32u)
-                                 + (((uint64_t)version_minor) << 16u)
-                                   + (uint64_t)version_patch;
+    uint64_t lib_encoded_version = (((uint64_t)2) << 32u)
+                                 + (((uint64_t)5) << 16u)
+                                   + (uint64_t)3;
 
     uint64_t req_encoded_version = (((uint64_t)req_major) << 32u)
                                  + (((uint64_t)req_minor) << 16u)
                                    + (uint64_t)req_patch;
 
-    if(version_major == (uint64_t)req_major && lib_encoded_version >= req_encoded_version) {
+    if(2 == (uint64_t)req_major && lib_encoded_version >= req_encoded_version) {
         return PLCTAG_STATUS_OK;
     } else {
         return PLCTAG_ERR_UNSUPPORTED;
@@ -811,13 +810,13 @@ PYBIND11_EXPORT int plc_tag_check_lib_version(int req_major, int req_minor, int 
  * This is where the dispatch occurs to the protocol specific implementation.
  */
 
-PYBIND11_EXPORT int32_t plc_tag_create(const char *attrib_str, int timeout)
+LIB_EXPORT int32_t plc_tag_create(const char *attrib_str, int timeout)
 {
     return plc_tag_create_ex(attrib_str, NULL, NULL, timeout);
 }
 
 
-PYBIND11_EXPORT int32_t plc_tag_create_ex(const char *attrib_str, void (*tag_callback_func)(int32_t tag_id, int event, int status, void *userdata), void *userdata, int timeout)
+LIB_EXPORT int32_t plc_tag_create_ex(const char *attrib_str, void (*tag_callback_func)(int32_t tag_id, int event, int status, void *userdata), void *userdata, int timeout)
 {
     plc_tag_p tag = PLC_TAG_P_NULL;
     int id = PLCTAG_ERR_OUT_OF_BOUNDS;
@@ -1073,7 +1072,7 @@ PYBIND11_EXPORT int32_t plc_tag_create_ex(const char *attrib_str, void (*tag_cal
  * recover all system resources when a process is terminated and this will not be necessary.
  */
 
-PYBIND11_EXPORT void plc_tag_shutdown(void)
+LIB_EXPORT void plc_tag_shutdown(void)
 {
     destroy_modules();
 }
@@ -1118,7 +1117,7 @@ PYBIND11_EXPORT void plc_tag_shutdown(void)
  * Also see plc_tag_register_callback_ex.
  */
 
-PYBIND11_EXPORT int plc_tag_register_callback(int32_t tag_id, tag_callback_func callback_func)
+LIB_EXPORT int plc_tag_register_callback(int32_t tag_id, tag_callback_func callback_func)
 {
     int rc = PLCTAG_STATUS_OK;
 
@@ -1172,7 +1171,7 @@ PYBIND11_EXPORT int plc_tag_register_callback(int32_t tag_id, tag_callback_func 
  * Also see plc_tag_register_callback.
  */
 
-PYBIND11_EXPORT int plc_tag_register_callback_ex(int32_t tag_id, tag_extended_callback_func callback_func, void *userdata)
+LIB_EXPORT int plc_tag_register_callback_ex(int32_t tag_id, tag_extended_callback_func callback_func, void *userdata)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(tag_id);
@@ -1218,7 +1217,7 @@ PYBIND11_EXPORT int plc_tag_register_callback_ex(int32_t tag_id, tag_extended_ca
  * An error of PLCTAG_ERR_NOT_FOUND is returned if there was no registered callback.
  */
 
-PYBIND11_EXPORT int plc_tag_unregister_callback(int32_t tag_id)
+LIB_EXPORT int plc_tag_unregister_callback(int32_t tag_id)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(tag_id);
@@ -1270,7 +1269,7 @@ PYBIND11_EXPORT int plc_tag_unregister_callback(int32_t tag_id)
  * If all is successful, the function will return PLCTAG_STATUS_OK.
  */
 
-PYBIND11_EXPORT int plc_tag_register_logger(void (*log_callback_func)(int32_t tag_id, int debug_level, const char *message))
+LIB_EXPORT int plc_tag_register_logger(void (*log_callback_func)(int32_t tag_id, int debug_level, const char *message))
 {
     int rc = PLCTAG_STATUS_OK;
 
@@ -1296,7 +1295,7 @@ PYBIND11_EXPORT int plc_tag_register_logger(void (*log_callback_func)(int32_t ta
  * An error of PLCTAG_ERR_NOT_FOUND is returned if there was no registered callback.
  */
 
-PYBIND11_EXPORT int plc_tag_unregister_logger(void)
+LIB_EXPORT int plc_tag_unregister_logger(void)
 {
     int rc = PLCTAG_STATUS_OK;
 
@@ -1324,7 +1323,7 @@ PYBIND11_EXPORT int plc_tag_unregister_logger(void)
  * followed by a call to plc_tag_unlock when you have everything you need from the tag.
  */
 
-PYBIND11_EXPORT int plc_tag_lock(int32_t id)
+LIB_EXPORT int plc_tag_lock(int32_t id)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(id);
@@ -1373,7 +1372,7 @@ PYBIND11_EXPORT int plc_tag_lock(int32_t id)
  * tag.
  */
 
-PYBIND11_EXPORT int plc_tag_unlock(int32_t id)
+LIB_EXPORT int plc_tag_unlock(int32_t id)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(id);
@@ -1411,7 +1410,7 @@ PYBIND11_EXPORT int plc_tag_unlock(int32_t id)
  * The status of the operation is returned.
  */
 
-PYBIND11_EXPORT int plc_tag_abort(int32_t id)
+LIB_EXPORT int plc_tag_abort(int32_t id)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(id);
@@ -1467,7 +1466,7 @@ PYBIND11_EXPORT int plc_tag_abort(int32_t id)
  */
 
 
-PYBIND11_EXPORT int plc_tag_destroy(int32_t tag_id)
+LIB_EXPORT int plc_tag_destroy(int32_t tag_id)
 {
     plc_tag_p tag = NULL;
 
@@ -1531,7 +1530,7 @@ PYBIND11_EXPORT int plc_tag_destroy(int32_t tag_id)
  * The status of the operation is returned.
  */
 
-PYBIND11_EXPORT int plc_tag_read(int32_t id, int timeout)
+LIB_EXPORT int plc_tag_read(int32_t id, int timeout)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(id);
@@ -1686,7 +1685,7 @@ PYBIND11_EXPORT int plc_tag_read(int32_t id, int timeout)
  * This is a function provided by the underlying protocol implementation.
  */
 
-PYBIND11_EXPORT int plc_tag_status(int32_t id)
+LIB_EXPORT int plc_tag_status(int32_t id)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(id);
@@ -1740,7 +1739,7 @@ PYBIND11_EXPORT int plc_tag_status(int32_t id)
  * The status of the operation is returned.
  */
 
-PYBIND11_EXPORT int plc_tag_write(int32_t id, int timeout)
+LIB_EXPORT int plc_tag_write(int32_t id, int timeout)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(id);
@@ -1888,7 +1887,7 @@ PYBIND11_EXPORT int plc_tag_write(int32_t id, int timeout)
 
 
 
-PYBIND11_EXPORT int plc_tag_get_int_attribute(int32_t id, const char *attrib_name, int default_value)
+LIB_EXPORT int plc_tag_get_int_attribute(int32_t id, const char *attrib_name, int default_value)
 {
     int res = default_value;
     plc_tag_p tag = NULL;
@@ -1904,11 +1903,11 @@ PYBIND11_EXPORT int plc_tag_get_int_attribute(int32_t id, const char *attrib_nam
     /* get library attributes */
     if(id == 0) {
         if(str_cmp_i(attrib_name, "version_major") == 0) {
-            res = (int)version_major;
+            res = (int)2;
         } else if(str_cmp_i(attrib_name, "version_minor") == 0) {
-            res = (int)version_minor;
+            res = (int)5;
         } else if(str_cmp_i(attrib_name, "version_patch") == 0) {
-            res = (int)version_patch;
+            res = (int)3;
         } else if(str_cmp_i(attrib_name, "debug") == 0) {
             res = (int)get_debug_level();
         } else if(str_cmp_i(attrib_name, "debug_level") == 0) {
@@ -1965,7 +1964,7 @@ PYBIND11_EXPORT int plc_tag_get_int_attribute(int32_t id, const char *attrib_nam
 
 
 
-PYBIND11_EXPORT int plc_tag_set_int_attribute(int32_t id, const char *attrib_name, int new_value)
+LIB_EXPORT int plc_tag_set_int_attribute(int32_t id, const char *attrib_name, int new_value)
 {
     int res = PLCTAG_ERR_NOT_FOUND;
     plc_tag_p tag = NULL;
@@ -2058,7 +2057,7 @@ PYBIND11_EXPORT int plc_tag_set_int_attribute(int32_t id, const char *attrib_nam
 
 
 
-PYBIND11_EXPORT int plc_tag_get_size(int32_t id)
+LIB_EXPORT int plc_tag_get_size(int32_t id)
 {
     int result = 0;
     plc_tag_p tag = lookup_tag(id);
@@ -2084,7 +2083,7 @@ PYBIND11_EXPORT int plc_tag_get_size(int32_t id)
 
 
 
-PYBIND11_EXPORT int plc_tag_set_size(int32_t id, int new_size)
+LIB_EXPORT int plc_tag_set_size(int32_t id, int new_size)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(id);
@@ -2132,7 +2131,7 @@ PYBIND11_EXPORT int plc_tag_set_size(int32_t id, int new_size)
 
 
 
-PYBIND11_EXPORT int plc_tag_get_bit(int32_t id, int offset_bit)
+LIB_EXPORT int plc_tag_get_bit(int32_t id, int offset_bit)
 {
     int res = PLCTAG_ERR_OUT_OF_BOUNDS;
     int real_offset = offset_bit;
@@ -2179,7 +2178,7 @@ PYBIND11_EXPORT int plc_tag_get_bit(int32_t id, int offset_bit)
 }
 
 
-PYBIND11_EXPORT int plc_tag_set_bit(int32_t id, int offset_bit, int val)
+LIB_EXPORT int plc_tag_set_bit(int32_t id, int offset_bit, int val)
 {
     int res = PLCTAG_STATUS_OK;
     int real_offset = offset_bit;
@@ -2236,7 +2235,7 @@ PYBIND11_EXPORT int plc_tag_set_bit(int32_t id, int offset_bit, int val)
 
 
 
-PYBIND11_EXPORT uint64_t plc_tag_get_uint64(int32_t id, int offset)
+LIB_EXPORT uint64_t plc_tag_get_uint64(int32_t id, int offset)
 {
     uint64_t res = UINT64_MAX;
     plc_tag_p tag = lookup_tag(id);
@@ -2290,7 +2289,7 @@ PYBIND11_EXPORT uint64_t plc_tag_get_uint64(int32_t id, int offset)
 
 
 
-PYBIND11_EXPORT int plc_tag_set_uint64(int32_t id, int offset, uint64_t val)
+LIB_EXPORT int plc_tag_set_uint64(int32_t id, int offset, uint64_t val)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(id);
@@ -2349,7 +2348,7 @@ PYBIND11_EXPORT int plc_tag_set_uint64(int32_t id, int offset, uint64_t val)
 
 
 
-PYBIND11_EXPORT int64_t plc_tag_get_int64(int32_t id, int offset)
+LIB_EXPORT int64_t plc_tag_get_int64(int32_t id, int offset)
 {
     int64_t res = INT64_MIN;
     plc_tag_p tag = lookup_tag(id);
@@ -2403,7 +2402,7 @@ PYBIND11_EXPORT int64_t plc_tag_get_int64(int32_t id, int offset)
 
 
 
-PYBIND11_EXPORT int plc_tag_set_int64(int32_t id, int offset, int64_t ival)
+LIB_EXPORT int plc_tag_set_int64(int32_t id, int offset, int64_t ival)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(id);
@@ -2460,7 +2459,7 @@ PYBIND11_EXPORT int plc_tag_set_int64(int32_t id, int offset, int64_t ival)
     return rc;
 }
 
-PYBIND11_EXPORT uint32_t plc_tag_get_uint32(int32_t id, int offset)
+LIB_EXPORT uint32_t plc_tag_get_uint32(int32_t id, int offset)
 {
     uint32_t res = UINT32_MAX;
     plc_tag_p tag = lookup_tag(id);
@@ -2510,7 +2509,7 @@ PYBIND11_EXPORT uint32_t plc_tag_get_uint32(int32_t id, int offset)
 
 
 
-PYBIND11_EXPORT int plc_tag_set_uint32(int32_t id, int offset, uint32_t val)
+LIB_EXPORT int plc_tag_set_uint32(int32_t id, int offset, uint32_t val)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(id);
@@ -2565,7 +2564,7 @@ PYBIND11_EXPORT int plc_tag_set_uint32(int32_t id, int offset, uint32_t val)
 
 
 
-PYBIND11_EXPORT int32_t  plc_tag_get_int32(int32_t id, int offset)
+LIB_EXPORT int32_t  plc_tag_get_int32(int32_t id, int offset)
 {
     int32_t res = INT32_MIN;
     plc_tag_p tag = lookup_tag(id);
@@ -2615,7 +2614,7 @@ PYBIND11_EXPORT int32_t  plc_tag_get_int32(int32_t id, int offset)
 
 
 
-PYBIND11_EXPORT int plc_tag_set_int32(int32_t id, int offset, int32_t ival)
+LIB_EXPORT int plc_tag_set_int32(int32_t id, int offset, int32_t ival)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(id);
@@ -2674,7 +2673,7 @@ PYBIND11_EXPORT int plc_tag_set_int32(int32_t id, int offset, int32_t ival)
 
 
 
-PYBIND11_EXPORT uint16_t plc_tag_get_uint16(int32_t id, int offset)
+LIB_EXPORT uint16_t plc_tag_get_uint16(int32_t id, int offset)
 {
     uint16_t res = UINT16_MAX;
     plc_tag_p tag = lookup_tag(id);
@@ -2723,7 +2722,7 @@ PYBIND11_EXPORT uint16_t plc_tag_get_uint16(int32_t id, int offset)
 
 
 
-PYBIND11_EXPORT int plc_tag_set_uint16(int32_t id, int offset, uint16_t val)
+LIB_EXPORT int plc_tag_set_uint16(int32_t id, int offset, uint16_t val)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(id);
@@ -2780,7 +2779,7 @@ PYBIND11_EXPORT int plc_tag_set_uint16(int32_t id, int offset, uint16_t val)
 
 
 
-PYBIND11_EXPORT int16_t  plc_tag_get_int16(int32_t id, int offset)
+LIB_EXPORT int16_t  plc_tag_get_int16(int32_t id, int offset)
 {
     int16_t res = INT16_MIN;
     plc_tag_p tag = lookup_tag(id);
@@ -2828,7 +2827,7 @@ PYBIND11_EXPORT int16_t  plc_tag_get_int16(int32_t id, int offset)
 
 
 
-PYBIND11_EXPORT int plc_tag_set_int16(int32_t id, int offset, int16_t ival)
+LIB_EXPORT int plc_tag_set_int16(int32_t id, int offset, int16_t ival)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(id);
@@ -2886,7 +2885,7 @@ PYBIND11_EXPORT int plc_tag_set_int16(int32_t id, int offset, int16_t ival)
 
 
 
-PYBIND11_EXPORT uint8_t plc_tag_get_uint8(int32_t id, int offset)
+LIB_EXPORT uint8_t plc_tag_get_uint8(int32_t id, int offset)
 {
     uint8_t res = UINT8_MAX;
     plc_tag_p tag = lookup_tag(id);
@@ -2933,7 +2932,7 @@ PYBIND11_EXPORT uint8_t plc_tag_get_uint8(int32_t id, int offset)
 
 
 
-PYBIND11_EXPORT int plc_tag_set_uint8(int32_t id, int offset, uint8_t val)
+LIB_EXPORT int plc_tag_set_uint8(int32_t id, int offset, uint8_t val)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(id);
@@ -2986,7 +2985,7 @@ PYBIND11_EXPORT int plc_tag_set_uint8(int32_t id, int offset, uint8_t val)
 
 
 
-PYBIND11_EXPORT int8_t plc_tag_get_int8(int32_t id, int offset)
+LIB_EXPORT int8_t plc_tag_get_int8(int32_t id, int offset)
 {
     int8_t res = INT8_MIN;
     plc_tag_p tag = lookup_tag(id);
@@ -3033,7 +3032,7 @@ PYBIND11_EXPORT int8_t plc_tag_get_int8(int32_t id, int offset)
 
 
 
-PYBIND11_EXPORT int plc_tag_set_int8(int32_t id, int offset, int8_t ival)
+LIB_EXPORT int plc_tag_set_int8(int32_t id, int offset, int8_t ival)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(id);
@@ -3088,7 +3087,7 @@ PYBIND11_EXPORT int plc_tag_set_int8(int32_t id, int offset, int8_t ival)
 
 
 
-PYBIND11_EXPORT double plc_tag_get_float64(int32_t id, int offset)
+LIB_EXPORT double plc_tag_get_float64(int32_t id, int offset)
 {
     double res = DBL_MIN;
     int rc = PLCTAG_STATUS_OK;
@@ -3152,7 +3151,7 @@ PYBIND11_EXPORT double plc_tag_get_float64(int32_t id, int offset)
 
 
 
-PYBIND11_EXPORT int plc_tag_set_float64(int32_t id, int offset, double fval)
+LIB_EXPORT int plc_tag_set_float64(int32_t id, int offset, double fval)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(id);
@@ -3213,7 +3212,7 @@ PYBIND11_EXPORT int plc_tag_set_float64(int32_t id, int offset, double fval)
 
 
 
-PYBIND11_EXPORT float plc_tag_get_float32(int32_t id, int offset)
+LIB_EXPORT float plc_tag_get_float32(int32_t id, int offset)
 {
     float res = FLT_MIN;
     int rc = PLCTAG_STATUS_OK;
@@ -3273,7 +3272,7 @@ PYBIND11_EXPORT float plc_tag_get_float32(int32_t id, int offset)
 
 
 
-PYBIND11_EXPORT int plc_tag_set_float32(int32_t id, int offset, float fval)
+LIB_EXPORT int plc_tag_set_float32(int32_t id, int offset, float fval)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(id);
@@ -3329,7 +3328,7 @@ PYBIND11_EXPORT int plc_tag_set_float32(int32_t id, int offset, float fval)
 }
 
 
-PYBIND11_EXPORT int plc_tag_get_string(int32_t tag_id, int string_start_offset, char *buffer, int buffer_length)
+LIB_EXPORT int plc_tag_get_string(int32_t tag_id, int string_start_offset, char *buffer, int buffer_length)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(tag_id);
@@ -3405,7 +3404,7 @@ PYBIND11_EXPORT int plc_tag_get_string(int32_t tag_id, int string_start_offset, 
 }
 
 
-PYBIND11_EXPORT int plc_tag_set_string(int32_t tag_id, int string_start_offset, const char *string_val)
+LIB_EXPORT int plc_tag_set_string(int32_t tag_id, int string_start_offset, const char *string_val)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(tag_id);
@@ -3579,7 +3578,7 @@ pdebug(DEBUG_WARN, "string_capacity=%d, string_last_offset=%d, tag_size=%d.", st
 
 
 
-PYBIND11_EXPORT int plc_tag_get_string_capacity(int32_t id, int string_start_offset)
+LIB_EXPORT int plc_tag_get_string_capacity(int32_t id, int string_start_offset)
 {
     int string_capacity = 0;
     plc_tag_p tag = lookup_tag(id);
@@ -3627,7 +3626,7 @@ PYBIND11_EXPORT int plc_tag_get_string_capacity(int32_t id, int string_start_off
 
 
 
-PYBIND11_EXPORT int plc_tag_get_string_length(int32_t id, int string_start_offset)
+LIB_EXPORT int plc_tag_get_string_length(int32_t id, int string_start_offset)
 {
     int string_length = 0;
     plc_tag_p tag = lookup_tag(id);
@@ -3676,7 +3675,7 @@ PYBIND11_EXPORT int plc_tag_get_string_length(int32_t id, int string_start_offse
 
 
 
-PYBIND11_EXPORT int plc_tag_get_string_total_length(int32_t id, int string_start_offset)
+LIB_EXPORT int plc_tag_get_string_total_length(int32_t id, int string_start_offset)
 {
     int total_length = 0;
     plc_tag_p tag = lookup_tag(id);
@@ -3727,7 +3726,7 @@ PYBIND11_EXPORT int plc_tag_get_string_total_length(int32_t id, int string_start
 
 
 
-PYBIND11_EXPORT int plc_tag_set_raw_bytes(int32_t id, int offset, uint8_t *buffer, int buffer_size)
+LIB_EXPORT int plc_tag_set_raw_bytes(int32_t id, int offset, uint8_t *buffer, int buffer_size)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(id);
@@ -3788,7 +3787,7 @@ PYBIND11_EXPORT int plc_tag_set_raw_bytes(int32_t id, int offset, uint8_t *buffe
 }
 
 
-PYBIND11_EXPORT int plc_tag_get_raw_bytes(int32_t id, int offset, uint8_t *buffer, int buffer_size)
+LIB_EXPORT int plc_tag_get_raw_bytes(int32_t id, int offset, uint8_t *buffer, int buffer_size)
 {
     int rc = PLCTAG_STATUS_OK;
     plc_tag_p tag = lookup_tag(id);

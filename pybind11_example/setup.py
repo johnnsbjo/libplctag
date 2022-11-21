@@ -130,30 +130,34 @@ class CMakeBuild(build_ext):
 ext_modules = [Pybind11Extension(
   'pybind11_example',
   ["src/pybind11/pybind11_example.cpp", "src/lib/lib.c"],
-  include_dirs=[get_include(True), get_include(True), get_include(True)]
+  include_dirs=[get_include(True), get_include(True)],
+  extra_compile_args = ["-std=c99 -Wc++-compat"],
 )]
 # The information here can also be placed in setup.cfg - better separation of
 # logic and declaration, and simpler if you include description/version in a file.
 setup(
     name="pybind11_example",
-    version="0.0.1",
-    author="Dean Moldovan",
-    author_email="dean0x7d@gmail.com",
+    version="0.0.2",
+    author="Bjorn Johnson",
+    author_email="johnsonabjorn@gmail.com",
     description="A test project using pybind11 and CMake",
     long_description="",
-    ext_modules=ext_modules,
-    cmdclass={"build_ext": build_ext},
-    zip_safe=False,
-    extras_require={"test": ["pytest>=6.0"]},
-    python_requires=">=3.10",
-    include_dirs=["src", "src/platform/posix", "src/protocols", "pybind11/include/pybind11",                "/usr/include/python3.10",
-                "/usr/include/c++/9",
-                "/usr/include/x86_64-linux-gnu/c++/9",
-                "/usr/include/c++/9/backward",
-                "/usr/lib/gcc/x86_64-linux-gnu/9/include",
-                "/usr/local/include",
-                "/usr/include/x86_64-linux-gnu",
-                "/usr/include",
-                "/home/bjorn/repos/libplctag/pybind11/include/pybind11",
-                "/usr/include/c++/9/tr1",]
+    package_data={'pybind11_example':['pybind11_example.so']}
+    # ext_modules=ext_modules,
+    # cmdclass={"build_ext": build_ext},
+    # zip_safe=False,
+    # extras_require={"test": ["pytest>=6.0"]},
+    # python_requires=">=3.10",
+    # include_dirs=["src", "src/platform/posix", "src/protocols", "pybind11/include/pybind11",
+    #             "/usr/include/python3.10",
+    #             "/usr/include/c++/9",
+    #             "/usr/include/x86_64-linux-gnu/c++/9",
+    #             "/usr/include/c++/9/backward",
+    #             "/usr/lib/gcc/x86_64-linux-gnu/9/include",
+    #             "/usr/local/include",
+    #             "/usr/include/x86_64-linux-gnu",
+    #             "/usr/include",
+    #             "src/lib",
+    #             "/home/bjorn/repos/libplctag/pybind11/include/pybind11",
+#]
 )

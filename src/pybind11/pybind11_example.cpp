@@ -1,6 +1,8 @@
 #include <pybind11/pybind11.h>
 #include <stdio.h>
-#include "../lib/libplctag.h"
+extern "C" {
+  #include "../lib/libplctag.h"
+}
 
 namespace py = pybind11;
 
